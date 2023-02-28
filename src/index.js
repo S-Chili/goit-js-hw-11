@@ -1,5 +1,7 @@
 import Notiflix from 'notiflix';
 import { ImgAPI } from './ImgAPI';
+import SimpleLightbox from 'simplelightbox';
+import 'simplelightbox/dist/simple-lightbox.min.css';
 
 const imgAPI = new ImgAPI();
 
@@ -86,6 +88,7 @@ function imgTemplate({
   downloads,
 }) {
   return `
+  <a class="gallery-item" href="${largeImageURL}">
     <div class="photo-card">
       <img src="${webformatURL}" alt="${tags}" loading="lazy" />
       <div class="info">
@@ -103,10 +106,13 @@ function imgTemplate({
         </p>
       </div>
     </div>
+    </a>
   `;
 }
 
 function renderImg(img) {
   const markup = img.map(imgTemplate).join('');
   refs.gallery.insertAdjacentHTML('beforeend', markup);
+  const lightbox = new SimpleLightbox('.gallery a');
+  lightbox.refresh();
 }

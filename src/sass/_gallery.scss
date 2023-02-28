@@ -3,6 +3,12 @@
   flex-wrap: wrap;
   justify-content: center;
 }
+
+.gallery-item {
+  text-decoration: none;
+  color: #654276;
+}
+
 .gallery {
   display: flex;
   flex-wrap: wrap;
