@@ -1,0 +1,28 @@
+.search-form {
+  display: flex;
+  margin-top: 50px;
+  justify-content: center;
+  align-items: baseline;
+}
+
+.sform {
+  font: inherit;
+  padding: 8px;
+  margin-bottom: 16px;
+  border-radius: 250px;
+  font-weight: bold;
+  color: #9167b4;
+  box-shadow: -5px -5px 20px #4a2b59, 5px 5px 20px #8d57a8;
+  margin-right: 15px;
+}
+
+.btn {
+  height: 100%;
+  text-shadow: 1px 1px #ddd3e2;
+  cursor: pointer;
+  background-color: #ddd3e2;
+  border-radius: 250px;
+  padding: 8px 14px;
+  font-weight: 700;
+  box-shadow: -5px -5px 20px #ddd3e2, 5px 5px 20px #ddd3e2;
+}
