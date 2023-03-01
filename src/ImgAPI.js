@@ -21,9 +21,11 @@ export class ImgAPI {
       .get(
         `${this.BASE_URL}?key=${this.API_KEY}&q=${query}&image_type=photo&orientation=horizontal&page=${page}&per_page=${perPage}`
       )
-      .then(data => {
-        console.log(data);
-        return data.data;
+      .then(({ data }) => {
+        const { hits, totalHits } = data;
+        const total = page === 1 ? hits.length : this.total + hits.length;
+        this.total = total;
+        return { hits, totalHits, total };
       });
   }
 }

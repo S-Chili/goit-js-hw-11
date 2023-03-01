@@ -6,6 +6,8 @@ import 'simplelightbox/dist/simple-lightbox.min.css';
 const imgAPI = new ImgAPI();
 
 let currentPage = 1;
+let allImagesLoaded = false;
+let newImg = null;
 
 const refs = {
   searchForm: document.querySelector('#search-form'),
@@ -30,8 +32,14 @@ function onSearchImg(e) {
   }
 
   currentPage = 1;
+  allImagesLoaded = false;
 
-  imgAPI.searchImgByAxios(query, currentPage, 40).then(newImg => {
+  refs.gallery.innerHTML = '';
+  refs.loadMoreBtn.classList.add('is-hidden');
+
+  const perPage = 40;
+  imgAPI.searchImgByAxios(query, currentPage, perPage).then(response => {
+    newImg = response;
     if (newImg.hits.length === 0) {
       Notiflix.Notify.failure(
         'Sorry, there are no images matching your search query. Please try again.'
@@ -47,8 +55,15 @@ function onSearchImg(e) {
 
     refs.loadMoreBtn.classList.remove('is-hidden');
 
-    if (newImg.totalHits <= 40) {
+    if (newImg.totalHits <= perPage) {
       refs.loadMoreBtn.classList.add('is-hidden');
+      allImagesLoaded = true;
+      Notiflix.Notify.info(
+        "We're sorry, but you've reached the end of search results."
+      );
+    } else {
+      refs.loadMoreBtn.classList.remove('is-hidden');
+      allImagesLoaded = false;
     }
   });
 
@@ -58,23 +73,44 @@ function onSearchImg(e) {
 function onLoadMore() {
   const query = document.querySelector('input').value.trim();
   const currentImages = document.querySelectorAll('.photo-card').length;
+
+  if (allImagesLoaded) {
+    Notiflix.Notify.warning(
+      "We're sorry, but there are no more images to load."
+    );
+    return;
+  }
+
+  if (currentPage === Math.ceil(newImg.totalHits / 40)) {
+    refs.loadMoreBtn.classList.add('is-hidden');
+    allImagesLoaded = true;
+    Notiflix.Notify.info(
+      "We're sorry, but you've reached the end of search results."
+    );
+    return;
+  }
+
   currentPage += 1;
 
   imgAPI
-    .searchImgByAxios(query, currentPage, 40) // передаємо значення параметрів page та per_page
-    .then(newImg => {
-      renderImg(newImg.hits);
-      if (newImg.totalHits <= currentImages + 12) {
+    .searchImgByAxios(query, currentPage, 40)
+    .then(response => {
+      newImg.hits.push(...response.hits);
+      renderImg(response.hits);
+
+      if (refs.gallery.children.length >= newImg.totalHits) {
         refs.loadMoreBtn.classList.add('is-hidden');
+        allImagesLoaded = true;
         Notiflix.Notify.info(
           "We're sorry, but you've reached the end of search results."
         );
-      } else {
-        refs.loadMoreBtn.classList.remove('is-hidden'); // Показати кнопку якщо ще є зображення
       }
     })
-    .catch(() => {
-      Notiflix.Notify.failure('Oops, something went wrong!');
+    .catch(error => {
+      Notiflix.Notify.failure(
+        'Oops, something went wrong. Please try again later.'
+      );
+      console.log(error);
     });
 }
 
