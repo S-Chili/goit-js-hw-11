@@ -20,7 +20,7 @@ refs.loadMoreBtn.addEventListener('click', onLoadMore);
 
 refs.loadMoreBtn.classList.add('is-hidden');
 
-function onSearchImg(e) {
+async function onSearchImg(e) {
   e.preventDefault();
 
   const data = new FormData(e.target);
@@ -38,8 +38,8 @@ function onSearchImg(e) {
   refs.loadMoreBtn.classList.add('is-hidden');
 
   const perPage = 40;
-  imgAPI.searchImgByAxios(query, currentPage, perPage).then(response => {
-    newImg = response;
+  try {
+    newImg = await imgAPI.searchImgByAxios(query, currentPage, perPage);
     if (newImg.hits.length === 0) {
       Notiflix.Notify.failure(
         'Sorry, there are no images matching your search query. Please try again.'
@@ -65,12 +65,17 @@ function onSearchImg(e) {
       refs.loadMoreBtn.classList.remove('is-hidden');
       allImagesLoaded = false;
     }
-  });
+  } catch (error) {
+    Notiflix.Notify.failure(
+      'Oops, something went wrong. Please try again later.'
+    );
+    console.log(error);
+  }
 
   e.target.reset();
 }
 
-function onLoadMore() {
+async function onLoadMore() {
   const query = document.querySelector('input').value.trim();
   const currentImages = document.querySelectorAll('.photo-card').length;
 
@@ -92,26 +97,24 @@ function onLoadMore() {
 
   currentPage += 1;
 
-  imgAPI
-    .searchImgByAxios(query, currentPage, 40)
-    .then(response => {
-      newImg.hits.push(...response.hits);
-      renderImg(response.hits);
+  try {
+    const response = await imgAPI.searchImgByAxios(query, currentPage, 40);
+    newImg.hits.push(...response.hits);
+    renderImg(response.hits);
 
-      if (refs.gallery.children.length >= newImg.totalHits) {
-        refs.loadMoreBtn.classList.add('is-hidden');
-        allImagesLoaded = true;
-        Notiflix.Notify.info(
-          "We're sorry, but you've reached the end of search results."
-        );
-      }
-    })
-    .catch(error => {
-      Notiflix.Notify.failure(
-        'Oops, something went wrong. Please try again later.'
+    if (refs.gallery.children.length >= newImg.totalHits) {
+      refs.loadMoreBtn.classList.add('is-hidden');
+      allImagesLoaded = true;
+      Notiflix.Notify.info(
+        "We're sorry, but you've reached the end of search results."
       );
-      console.log(error);
-    });
+    }
+  } catch (error) {
+    Notiflix.Notify.failure(
+      'Oops, something went wrong. Please try again later.'
+    );
+    console.log(error);
+  }
 }
 
 function imgTemplate({
@@ -124,26 +127,26 @@ function imgTemplate({
   downloads,
 }) {
   return `
-  <a class="gallery-item" href="${largeImageURL}">
-    <div class="photo-card">
-      <img src="${webformatURL}" alt="${tags}" loading="lazy" />
-      <div class="info">
-        <p class="info-item">
-          <b>Likes:<br></b> ${likes}
-        </p>
-        <p class="info-item">
-          <b>Views:<br></b> ${views}
-        </p>
-        <p class="info-item">
-          <b>Comments:<br></b> ${comments}
-        </p>
-        <p class="info-item">
-          <b>Downloads:<br></b> ${downloads}
-        </p>
+    <a class="gallery-item" href="${largeImageURL}">
+      <div class="photo-card">
+        <img src="${webformatURL}" alt="${tags}" loading="lazy" />
+        <div class="info">
+          <p class="info-item">
+            <b>Likes:<br></b> ${likes}
+          </p>
+          <p class="info-item">
+            <b>Views:<br></b> ${views}
+          </p>
+          <p class="info-item">
+            <b>Comments:<br></b> ${comments}
+          </p>
+          <p class="info-item">
+            <b>Downloads:<br></b> ${downloads}
+          </p>
+        </div>
       </div>
-    </div>
-    </a>
-  `;
+      </a>
+    `;
 }
 
 function renderImg(img) {
